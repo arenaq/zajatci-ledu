@@ -1,0 +1,6 @@
+# GitHub Pages (Jekyll): na webu má být jen prezentace, ne dokumentace repozitáře.
+# Složky začínající podtržítkem nebo tečkou (_build, .github) Jekyll nepublikuje sám.
+exclude:
+  - README.md
+  - CLAUDE.md
+  - docs
