@@ -1,0 +1,14 @@
+{
+  "_poznamka": "Veřejné nastavení hlasů, kterými se vyprávění generuje. API klíče sem nepatří: lokálně do .env, na GitHubu do secretu ELEVENLABS_API_KEY.",
+  "elevenlabs": {
+    "voice_id": "Ds83HLxlalYdwK8IwqTu",
+    "voice_name": "Radan-Deep",
+    "model": "eleven_v4",
+    "voice_settings": {"stability": 0.5, "similarity_boost": 0.8, "style": 0.1, "use_speaker_boost": true}
+  },
+  "piper": {
+    "model": "cs_CZ-jirka-medium",
+    "label": "Jirka (Piper, offline)",
+    "length_scale": 1.07
+  }
+}

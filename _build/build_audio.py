@@ -1,18 +1,21 @@
-"""Namluví vyprávění ze slides.json, uloží audio/<id>.mp3 a data.js s časováním vět.
+"""Namluví vyprávění ze slides.json, uloží audio/<id>.mp3 a vloží časování vět do index.html.
 
 Každá věta se syntetizuje zvlášť a ukládá do _build/cache, takže po úpravě textu
-se přegenerují jen změněné věty. Hlas se volí prvním argumentem:
+se přegenerují jen změněné věty. Veřejné nastavení hlasů je v _build/voice.json,
+tajné klíče jen v proměnných prostředí nebo v souboru .env (je v .gitignore).
+Hlas se volí prvním argumentem:
 
-  piper       offline, rodilý český hlas Jirka (výchozí, zdarma)
-  elevenlabs  čte api_key, voice_id a model (výchozí eleven_v4) ze soukromého souboru
-              _build/elevenlabs.json. Před syntézou zkontroluje zbývající kredity.
-  azure       potřebuje AZURE_SPEECH_KEY a AZURE_SPEECH_REGION (hlas cs-CZ-AntoninNeural,
+  elevenlabs  hlas a model podle voice.json; klíč ELEVENLABS_API_KEY. Před syntézou
+              zkontroluje zbývající kredity.
+  piper       offline, rodilý český hlas Jirka (model v _build/voices, viz README)
+  azure       klíč AZURE_SPEECH_KEY a AZURE_SPEECH_REGION (hlas cs-CZ-AntoninNeural,
               jiný přes AZURE_VOICE)
   edge        zdarma online přes edge-tts (hlas EDGE_VOICE, výchozí cs-CZ-AntoninNeural)
 
-Spuštění (ze složky prezentace):
-  uv run --python 3.12 --with piper-tts --with lameenc --with numpy --with edge-tts --with miniaudio python _build/build_audio.py piper
-Ukázka jednoho snímku do složky ukazky_hlasu, bez zásahu do prezentace:
+Spuštění (z kořene repozitáře):
+  uv run --python 3.12 --with lameenc --with numpy python _build/build_audio.py elevenlabs
+  (pro piper přidejte --with piper-tts, pro edge --with edge-tts --with miniaudio)
+Ukázka jednoho snímku do složky ukazky/, bez zásahu do prezentace:
   ... python _build/build_audio.py elevenlabs --only d12
 """
 import asyncio
@@ -38,45 +41,63 @@ GAP_COMMA = 0.22   # pauza po větě končící čárkou
 TAIL = 0.6         # ticho na konci snímku
 
 
+# ---------------------------------------------------------------- nastavení
+
+def voice_settings(name):
+    """Veřejné nastavení hlasu z _build/voice.json (commitnuté, bez klíčů)."""
+    path = os.path.join(BUILD, "voice.json")
+    return json.load(open(path, encoding="utf-8")).get(name, {}) if os.path.exists(path) else {}
+
+
+def secret(name):
+    """Tajný klíč z proměnné prostředí (GitHub Actions) nebo z lokálního souboru .env."""
+    if os.environ.get(name):
+        return os.environ[name]
+    path = os.path.join(ROOT, ".env")
+    if os.path.exists(path):
+        for line in open(path, encoding="utf-8"):
+            key, sep, value = line.strip().partition("=")
+            if sep and key.strip() == name:
+                return value.strip().strip('"')
+    return None
+
+
 # ---------------------------------------------------------------- hlasy
 
 class Piper:
-    label = "Jirka (Piper, offline)"
-
     def __init__(self):
         from piper import PiperVoice, SynthesisConfig
-        model = os.environ.get("PIPER_MODEL", os.path.join(BUILD, "voices", "cs_CZ-jirka-medium.onnx"))
+        cfg = voice_settings("piper")
+        name = cfg.get("model", "cs_CZ-jirka-medium")
+        model = os.path.join(BUILD, "voices", name + ".onnx")
         self.key = "piper:" + os.path.basename(model)
+        self.label = cfg.get("label", "Jirka (Piper, offline)")
         self.voice = PiperVoice.load(model)
-        self.cfg = SynthesisConfig(length_scale=1.07)
+        self.cfg = SynthesisConfig(length_scale=cfg.get("length_scale", 1.07))
 
     def synth(self, text, prev, nxt):
         chunks = list(self.voice.synthesize(text, syn_config=self.cfg))
         return np.concatenate([c.audio_int16_array for c in chunks]), chunks[0].sample_rate
 
 
-def local_settings(name):
-    """Soukromé nastavení ze _build/<name>.json (klíče se neukládají do proměnných prostředí)."""
-    path = os.path.join(BUILD, name + ".json")
-    return json.load(open(path, encoding="utf-8")) if os.path.exists(path) else {}
-
-
 class ElevenLabs:
     API = "https://api.elevenlabs.io/v1"
 
     def __init__(self):
-        cfg = local_settings("elevenlabs")
-        self.api_key = cfg.get("api_key") or os.environ.get("ELEVENLABS_API_KEY")
-        self.voice_id = cfg.get("voice_id") or os.environ.get("ELEVENLABS_VOICE_ID")
+        cfg = voice_settings("elevenlabs")
+        self.api_key = secret("ELEVENLABS_API_KEY")
+        self.voice_id = cfg.get("voice_id")
         if not self.api_key or not self.voice_id:
-            sys.exit("Chybí api_key nebo voice_id v _build/elevenlabs.json, nic se negeneruje.")
-        self.model = cfg.get("model") or os.environ.get("ELEVENLABS_MODEL") or "eleven_v4"
+            sys.exit("Chybí ELEVENLABS_API_KEY (.env nebo secret) nebo voice_id ve voice.json, nic se negeneruje.")
+        self.model = cfg.get("model", "eleven_v4")
+        self.settings = cfg.get("voice_settings", {})
+        # Klíč mezipaměti záměrně bez voice_settings, aby zůstaly platné už namluvené věty
         self.key = f"elevenlabs:{self.voice_id}:{self.model}"
         self.simple = False  # model neumí navazování vět nebo nastavení hlasu
         try:
             self.label = self._get(f"/voices/{self.voice_id}")["name"] + " (ElevenLabs)"
         except Exception:
-            self.label = f"ElevenLabs ({self.voice_id})"
+            self.label = cfg.get("voice_name", self.voice_id) + " (ElevenLabs)"
 
     def _get(self, path):
         req = urllib.request.Request(self.API + path, headers={"xi-api-key": self.api_key})
@@ -103,8 +124,9 @@ class ElevenLabs:
     def synth(self, text, prev, nxt):
         body = {"text": text, "model_id": self.model}
         if not self.simple:
-            body.update(previous_text=prev, next_text=nxt,
-                        voice_settings={"stability": 0.5, "similarity_boost": 0.8, "style": 0.1, "use_speaker_boost": True})
+            body.update(previous_text=prev, next_text=nxt)
+            if self.settings:
+                body["voice_settings"] = self.settings
         req = urllib.request.Request(
             f"{self.API}/text-to-speech/{self.voice_id}?output_format=pcm_24000",
             data=json.dumps(body).encode(), headers={"xi-api-key": self.api_key, "Content-Type": "application/json"})
@@ -251,7 +273,7 @@ def main(name, only=None):
     if only:
         # Ukázka jednoho snímku k poslechu; prezentace zůstane beze změny
         pcm, sr, _ = render_slide(backend, slides[0]["text"], spec["tts_replace"])
-        out = os.path.join(os.path.dirname(ROOT), "ukazky_hlasu", f"{name}_{only}.mp3")
+        out = os.path.join(ROOT, "ukazky", f"{name}_{only}.mp3")
         os.makedirs(os.path.dirname(out), exist_ok=True)
         encode_mp3(pcm, sr, out)
         print(f"Ukázka uložena: {out} ({len(pcm) / sr:.1f} s)")

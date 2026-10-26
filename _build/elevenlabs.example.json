@@ -1,6 +1,0 @@
-{
-  "_poznamka": "Zkopírujte jako elevenlabs.json a doplňte vlastní API klíč. Soubor elevenlabs.json je v .gitignore.",
-  "api_key": "sk_...",
-  "voice_id": "Ds83HLxlalYdwK8IwqTu",
-  "model": "eleven_v4"
-}

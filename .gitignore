@@ -1,9 +1,14 @@
-# Soukromé nastavení s API klíčem ElevenLabs, nikdy necommitovat
+# Soukromé klíče, nikdy necommitovat (lokálně .env, na GitHubu secret ELEVENLABS_API_KEY)
+.env
 _build/elevenlabs.json
 
-# Mezipaměť namluvených vět a hlasový model Piper (stáhne se znovu, viz README)
+# Mezipaměť namluvených vět, hlasový model Piper a stažené skeny rytin (vše se dá znovu získat, viz README)
 _build/cache/
 _build/voices/
+_build/scans/
+
+# Ukázky hlasů z build_audio.py --only
+ukazky/
 
 __pycache__/
 *.pyc
