@@ -1,0 +1,12 @@
+# Soukromé nastavení s API klíčem ElevenLabs, nikdy necommitovat
+_build/elevenlabs.json
+
+# Mezipaměť namluvených vět a hlasový model Piper (stáhne se znovu, viz README)
+_build/cache/
+_build/voices/
+
+__pycache__/
+*.pyc
+Thumbs.db
+desktop.ini
+.DS_Store

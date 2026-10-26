@@ -1,0 +1,753 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zajatci ledu</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,700;1,400;1,500&family=Alegreya+Sans:wght@400;500;700&family=Alegreya+Sans+SC:wght@500;700&family=Grenze+Gotisch:wght@600&display=swap">
+<style>
+/* Layout: kinoplátno. Rytina vyplňuje celé okno jako projekce, lodní deník (kapitola, datum, titulek)
+   sedí vlevo dole, pod ním běží časová osa výpravy rozdělená podle dat z deníku. Jeden tmavý vzhled: polární noc. */
+:root {
+  --night: #0a1017;
+  --night-rgb: 10, 16, 23;
+  --deep: #131d28;
+  --parchment: #ece2cb;
+  --parchment-rgb: 236, 226, 203;
+  --ice: #a9bfcf;
+  --brass: #c8a25c;
+  --brass-soft: rgba(200, 162, 92, 0.38);
+  --f-display: "Grenze Gotisch", "UnifrakturMaguntia", Georgia, serif;
+  --f-serif: "Alegreya", Georgia, "Times New Roman", serif;
+  --f-sans: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+  --f-sc: "Alegreya Sans SC", "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--parchment);
+  font-family: var(--f-sans);
+  overflow: hidden;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-font-smoothing: antialiased;
+}
+body.idle { cursor: none; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+
+/* ---------- plátno ---------- */
+#stage { position: fixed; inset: 0; overflow: hidden; background: var(--night); }
+.cam { position: absolute; inset: 0; opacity: 0; transition: opacity 1.7s ease; }
+.cam.on { opacity: 1; }
+.cam img {
+  position: absolute; left: 0; top: 0; max-width: none;
+  transform-origin: 0 0; will-change: transform;
+  filter: brightness(0.9) contrast(1.06);
+}
+.cam.disc img {
+  filter: invert(0.92) sepia(0.55) saturate(0.8) brightness(0.85);
+  -webkit-mask-image: radial-gradient(circle closest-side, #000 93%, transparent 98%);
+  mask-image: radial-gradient(circle closest-side, #000 93%, transparent 98%);
+}
+#veil {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(130% 95% at 50% 42%, rgba(var(--night-rgb), 0) 52%, rgba(var(--night-rgb), 0.62) 100%),
+    linear-gradient(to top, rgba(var(--night-rgb), 0.94) 0%, rgba(var(--night-rgb), 0.62) 20%, rgba(var(--night-rgb), 0) 46%),
+    linear-gradient(to bottom, rgba(var(--night-rgb), 0.55) 0%, rgba(var(--night-rgb), 0) 16%);
+  transition: background 1s;
+}
+#snow { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+/* ---------- titulní obrazovka ---------- */
+#cover {
+  position: fixed; inset: 0; z-index: 5;
+  display: grid; align-content: center;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) var(--gutter-r) calc(24px + env(safe-area-inset-bottom, 0px)) max(calc(16px + env(safe-area-inset-left, 0px)), 7vw);
+  background: linear-gradient(90deg, rgba(var(--night-rgb), 0.92) 0%, rgba(var(--night-rgb), 0.55) 48%, rgba(var(--night-rgb), 0) 75%);
+  transition: opacity 1.2s ease;
+}
+#cover.gone { opacity: 0; pointer-events: none; }
+.cover-inner { max-width: 34rem; display: grid; gap: 1.1rem; }
+.kicker {
+  margin: 0; font-family: var(--f-sc); font-weight: 700; font-size: 0.95rem;
+  letter-spacing: 0.16em; color: var(--brass);
+}
+#cover h1 {
+  margin: 0; font-family: var(--f-display); font-weight: 600;
+  font-size: clamp(3.6rem, 10vw, 8.5rem); line-height: 0.9; letter-spacing: 0.01em;
+  color: var(--parchment); text-shadow: 0 4px 40px rgba(var(--night-rgb), 0.8);
+}
+.cover-sub {
+  margin: 0; font-family: var(--f-serif); font-style: italic; font-size: clamp(1.1rem, 2vw, 1.35rem);
+  line-height: 1.45; color: var(--ice); max-width: 30rem; text-wrap: pretty;
+}
+.cover-actions { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; margin-top: 0.6rem; }
+#start {
+  display: inline-flex; align-items: center; gap: 0.9rem; cursor: pointer;
+  padding: 0.55rem 1.4rem 0.55rem 0.55rem; border-radius: 999px;
+  background: var(--brass); color: var(--night); border: 0;
+  font-family: var(--f-sc); font-weight: 700; font-size: 1.1rem; letter-spacing: 0.08em; white-space: nowrap;
+  box-shadow: 0 10px 40px rgba(var(--night-rgb), 0.6);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+#start:hover { transform: translateY(-1px); background: var(--parchment); }
+#start .ring {
+  width: 2.6rem; height: 2.6rem; border-radius: 50%; display: grid; place-items: center;
+  background: var(--night); color: var(--brass);
+}
+#start svg { width: 1.2rem; height: 1.2rem; margin-left: 2px; }
+.cover-meta { margin: 0; font-size: 0.95rem; color: var(--ice); opacity: 0.85; }
+#cover.playing .cover-actions, #cover.playing .cover-meta { opacity: 0; pointer-events: none; transition: opacity 0.6s; }
+
+/* ---------- kapitolový předěl ---------- */
+#chapter {
+  position: fixed; inset: 0; z-index: 4; display: grid; place-content: center; text-align: center; gap: 0.4rem;
+  background: rgba(var(--night-rgb), 0.82); opacity: 0; pointer-events: none; transition: opacity 0.9s ease;
+  padding-inline: var(--gutter-l) var(--gutter-r);
+}
+#chapter.on { opacity: 1; }
+#chapter .num { font-family: var(--f-display); font-size: clamp(3rem, 9vw, 6.5rem); color: var(--brass); line-height: 1; }
+#chapter .name { font-family: var(--f-serif); font-style: italic; font-size: clamp(1.6rem, 4vw, 2.6rem); color: var(--parchment); }
+#chapter .rule { width: 7rem; height: 1px; background: var(--brass-soft); margin: 0.6rem auto 0; }
+
+/* ---------- popisek snímku ---------- */
+#caption {
+  position: fixed; z-index: 3; left: 0; right: 0;
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(calc(16px + env(safe-area-inset-left, 0px)), 5vw);
+  padding-right: var(--gutter-r);
+  display: grid; gap: 0.35rem; justify-items: start; pointer-events: none;
+  transition: bottom 0.5s ease, opacity 0.6s ease;
+}
+body.cc #caption { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+#caption.out { opacity: 0; }
+.cap-chapter { font-family: var(--f-sc); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.18em; color: var(--brass); }
+.cap-date {
+  font-family: var(--f-serif); font-style: italic; font-weight: 500; font-size: clamp(1.1rem, 2vw, 1.45rem);
+  color: var(--ice); font-variant-numeric: oldstyle-nums;
+}
+.cap-title {
+  margin: 0; font-family: var(--f-serif); font-weight: 700; font-size: clamp(2.1rem, 5.4vw, 4.4rem);
+  line-height: 1.02; text-wrap: balance; max-width: 18ch; color: var(--parchment);
+  text-shadow: 0 2px 30px rgba(var(--night-rgb), 0.7);
+}
+.cap-title .w { display: inline-block; white-space: pre; }
+#caption.anim .cap-chapter, #caption.anim .cap-date { animation: fadeUp 0.9s ease both; }
+#caption.anim .cap-date { animation-delay: 0.15s; }
+#caption.anim .w { animation: wordIn 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes wordIn { from { opacity: 0; transform: translateY(0.35em); filter: blur(10px); } to { opacity: 1; transform: none; filter: blur(0); } }
+
+/* ---------- titulky ---------- */
+#subs {
+  position: fixed; z-index: 3; left: 50%; transform: translateX(-50%);
+  bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+  width: min(52rem, calc(100vw - 32px)); text-align: center; pointer-events: none;
+  font-size: clamp(1.02rem, 2.1vw, 1.32rem); line-height: 1.4; color: var(--parchment);
+}
+#subs span {
+  display: inline; padding: 0.15em 0.45em; border-radius: 4px;
+  background: rgba(var(--night-rgb), 0.78); -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+
+/* ---------- ovládání ---------- */
+#bar {
+  position: fixed; z-index: 6; left: 0; right: 0; bottom: 0;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px var(--gutter-r) calc(12px + env(safe-area-inset-bottom, 0px)) var(--gutter-l);
+  transition: opacity 0.5s ease;
+}
+body.idle #bar, body.idle #tip { opacity: 0; }
+body.pre #bar { opacity: 0; pointer-events: none; }
+.ic {
+  flex: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+  display: grid; place-items: center;
+  background: rgba(var(--night-rgb), 0.55); border: 1px solid var(--brass-soft);
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.ic:hover { background: rgba(var(--night-rgb), 0.85); border-color: var(--brass); }
+.ic svg { width: 20px; height: 20px; }
+.ic.main { width: 50px; height: 50px; background: var(--brass); color: var(--night); border-color: var(--brass); }
+.ic.main:hover { background: var(--parchment); }
+.ic.txt { font-family: var(--f-sc); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.06em; }
+.ic[aria-pressed="false"] { color: rgba(var(--parchment-rgb), 0.45); }
+.ic[aria-pressed="true"] { border-color: var(--brass); color: var(--brass); }
+#timeline { flex: 1; min-width: 0; height: 34px; display: flex; align-items: center; gap: 3px; cursor: pointer; touch-action: none; }
+.seg { position: relative; height: 4px; border-radius: 2px; background: rgba(var(--parchment-rgb), 0.2); overflow: hidden; }
+.seg.ch { margin-left: 7px; }
+.seg i { position: absolute; inset: 0; background: var(--brass); transform-origin: 0 50%; transform: scaleX(0); }
+#timeline:hover .seg { height: 7px; }
+#clock { flex: none; font-variant-numeric: tabular-nums; font-size: 0.95rem; color: var(--ice); min-width: 6.6em; text-align: right; }
+#tip {
+  position: fixed; z-index: 7; bottom: calc(62px + env(safe-area-inset-bottom, 0px)); left: 0;
+  padding: 0.45rem 0.7rem; border-radius: 6px; background: var(--deep); border: 1px solid var(--brass-soft);
+  font-size: 0.92rem; white-space: nowrap; pointer-events: none; transform: translateX(-50%);
+}
+#tip b { font-family: var(--f-serif); font-style: italic; font-weight: 500; color: var(--ice); margin-right: 0.4em; }
+
+/* ---------- závěrečné titulky ---------- */
+#credits {
+  position: fixed; inset: 0; z-index: 4; display: grid; place-items: center;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) var(--gutter-r) calc(96px + env(safe-area-inset-bottom, 0px)) var(--gutter-l);
+  background: rgba(var(--night-rgb), 0.8); opacity: 0; pointer-events: none; transition: opacity 1.2s ease;
+}
+#credits.on { opacity: 1; pointer-events: auto; }
+.cred { max-width: 40rem; display: grid; gap: 1.3rem; }
+.cred h2 { margin: 0; font-family: var(--f-display); font-weight: 600; font-size: clamp(2.4rem, 6vw, 4rem); color: var(--parchment); line-height: 1; }
+.cred dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 0.55rem 1.3rem; }
+.cred dt { font-family: var(--f-sc); font-weight: 700; letter-spacing: 0.12em; font-size: 0.85rem; color: var(--brass); padding-top: 0.2rem; }
+.cred dd { margin: 0; font-family: var(--f-serif); font-size: 1.08rem; line-height: 1.45; color: var(--parchment); min-width: 0; }
+.cred dd small { color: var(--ice); font-size: 0.92em; }
+#replay {
+  justify-self: start; cursor: pointer; padding: 0.6rem 1.3rem; border-radius: 999px;
+  border: 1px solid var(--brass); background: transparent; color: var(--brass);
+  font-family: var(--f-sc); font-weight: 700; letter-spacing: 0.08em; font-size: 1rem;
+}
+#replay:hover { background: var(--brass); color: var(--night); }
+
+@media (max-width: 640px) {
+  #cover { align-content: end; background: linear-gradient(0deg, rgba(var(--night-rgb), 0.95) 0%, rgba(var(--night-rgb), 0.7) 45%, rgba(var(--night-rgb), 0) 70%); }
+  #clock { display: none; }
+  .ic { width: 38px; height: 38px; }
+  .ic.main { width: 46px; height: 46px; }
+  #bar { gap: 6px; }
+  .cred dl { grid-template-columns: 1fr; gap: 0.2rem; }
+  .cred dd { margin-bottom: 0.6rem; }
+  body.cc #caption { bottom: calc(170px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cam { transition-duration: 0.6s; }
+  #caption.anim .w, #caption.anim .cap-chapter, #caption.anim .cap-date { animation: none; }
+}
+</style>
+
+<div id="stage" aria-hidden="true">
+  <div class="cam"><img alt=""></div>
+  <div class="cam"><img alt=""></div>
+  <div id="veil"></div>
+  <canvas id="snow"></canvas>
+</div>
+
+<section id="cover" aria-labelledby="cover-title">
+  <div class="cover-inner">
+    <p class="kicker">Deník Gerrita de Veera · 1596–1597</p>
+    <h1 id="cover-title">Zajatci ledu</h1>
+    <p class="cover-sub">Poslední plavba Willema Barentse, vyprávěná podle panelů z muzea v norském Tromsø a rytin z první knihy o výpravě z roku 1598.</p>
+    <div class="cover-actions">
+      <button id="start" type="button">
+        <span class="ring"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z"/></svg></span>
+        Spustit vyprávění
+      </button>
+    </div>
+    <p class="cover-meta" id="cover-meta">Asi 15 minut · česky · zapněte si zvuk</p>
+  </div>
+</section>
+
+<div id="chapter" aria-hidden="true"><div class="num"></div><div class="name"></div><div class="rule"></div></div>
+
+<div id="caption" aria-live="polite">
+  <div class="cap-chapter"></div>
+  <div class="cap-date"></div>
+  <h2 class="cap-title"></h2>
+</div>
+
+<div id="subs" hidden><span></span></div>
+
+<section id="credits" aria-labelledby="cred-title">
+  <div class="cred">
+    <h2 id="cred-title">Zajatci ledu</h2>
+    <dl>
+      <dt>Deník</dt>
+      <dd>Gerrit de Veer, <i>Waerachtighe beschryvinghe van drie seylagien</i>, Amsterdam 1598. Text podle norských panelů vystavených v Tromsø, přeložený do češtiny.</dd>
+      <dt>Rytiny</dt>
+      <dd>Rijksmuseum Amsterdam, sbírka tisků k výpravě Barentse a Heemskercka (RP-P-OB-80.205–229, NG-1979-564-15 a -22). Volné dílo <small>(CC0, přes Wikimedia Commons)</small>.</dd>
+      <dt>Úvod a epilog</dt>
+      <dd>Doplněno z historie výpravy a z nálezu Ellinga Carlsena v roce 1871.</dd>
+      <dt>Hlas</dt>
+      <dd id="cred-voice">Syntetický hlas</dd>
+    </dl>
+    <button id="replay" type="button">Přehrát znovu</button>
+  </div>
+</section>
+
+<div id="tip" hidden></div>
+
+<div id="bar" role="toolbar" aria-label="Ovládání vyprávění">
+  <button class="ic" id="prev" type="button" aria-label="Předchozí snímek" title="Předchozí (←)">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
+  </button>
+  <button class="ic main" id="play" type="button" aria-label="Pozastavit" title="Přehrát / pozastavit (mezerník)">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path id="play-icon" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+  </button>
+  <button class="ic" id="next" type="button" aria-label="Další snímek" title="Další (→)">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5l11 7-11 7z"/></svg>
+  </button>
+  <div id="timeline" role="slider" aria-label="Časová osa" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"></div>
+  <div id="clock">0:00 / 0:00</div>
+  <button class="ic txt" id="cc" type="button" aria-pressed="false" title="Titulky (C)">CC</button>
+  <button class="ic" id="wind" type="button" aria-pressed="true" aria-label="Zvuk větru" title="Zvuk větru (M)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 8h10a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7"/></svg>
+  </button>
+  <button class="ic" id="fs" type="button" aria-label="Celá obrazovka" title="Celá obrazovka (F)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+  </button>
+</div>
+
+<audio id="voice" preload="auto"></audio>
+
+<script>
+/*DATA-START*/
+window.PRESENTATION = {"title":"Zajatci ledu","subtitle":"Deník z poslední plavby Willema Barentse · 1596–1597","voice":"Radan-Deep (ElevenLabs)","slides":[{"id":"s00","kind":"title","snow":0.5,"wind":0.5,"images":[{"src":"ng15","at":0,"spin":true,"moves":[[0,0.5,0.5,1.05],[1,0.5,0.5,1.25]]}],"audio":"audio/s00.mp3","duration":9.01,"sentences":[{"text":"Zajatci ledu.","t":[0.45,1.66]},{"text":"Deník z poslední plavby Willema Barentse, z let 1596–1597.","t":[2.16,8.41]}]},{"id":"s01","kind":"intro","chapter":"I · Na sever","date":"květen 1596","title":"Dvě lodě na sever","snow":0.0,"wind":0.35,"images":[{"src":"rp205","at":0,"moves":[[0,0.5,0.5,1.0],[2,0.3,0.5,1.35],[4,0.72,0.5,1.35]]}],"audio":"audio/s01.mp3","duration":31.29,"sentences":[{"text":"Konec šestnáctého století.","t":[0.45,2.4]},{"text":"Nizozemští kupci hledají cestu do Číny a Indie, která by se vyhnula portugalským a španělským lodím na jihu.","t":[2.9,10.19]},{"text":"Co kdyby se dalo doplout na východ kolem severního pobřeží Ruska?","t":[10.69,14.67]},{"text":"V květnu roku 1596 proto z Nizozemska vyplouvají dvě lodě.","t":[15.17,20.18]},{"text":"Jednu vede Jacob van Heemskerck a jako hlavní navigátor s ním pluje zkušený mořeplavec Willem Barents.","t":[20.68,27.4]},{"text":"Druhé lodi velí Jan Cornelisz Rijp.","t":[27.9,30.69]}]},{"id":"s02","kind":"intro","chapter":"I · Na sever","date":"červen 1596","title":"Medvědí ostrov a Špicberky","snow":0.0,"wind":0.35,"images":[{"src":"rp206","at":0,"moves":[[0,0.5,0.35,1.05],[2,0.45,0.78,1.45]]},{"src":"rp208","at":4,"moves":[[4,0.5,0.5,1.0],[5,0.33,0.33,1.55]]}],"audio":"audio/s02.mp3","duration":34.08,"sentences":[{"text":"Na palubě je i Gerrit de Veer, který si celou cestu zapisuje.","t":[0.45,4.53]},{"text":"Jeho deník vyjde v roce 1598 i s rytinami, na které se právě díváte.","t":[5.03,10.86]},{"text":"V červnu lodě narazí na neznámý ostrov, u jehož břehů plave lední medvěd.","t":[11.36,16.66]},{"text":"Námořníci s ním svedou dlouhý boj a ostrov pojmenují Medvědí.","t":[17.16,21.84]},{"text":"O několik dní později spatří zemi plnou ostrých štítů.","t":[22.34,26.18]},{"text":"Pojmenují ji Spitsbergen, Špičaté hory. Dnes je to největší ostrov souostroví Svalbard.","t":[26.68,33.48]}]},{"id":"s03","kind":"intro","chapter":"I · Na sever","date":"červenec – srpen 1596","title":"K Nové Zemi","snow":0.15,"wind":0.45,"images":[{"src":"rp207","at":0,"moves":[[0,0.5,0.5,1.0],[1,0.58,0.45,1.3],[3,0.5,0.7,1.45]]}],"audio":"audio/s03.mp3","duration":25.09,"sentences":[{"text":"U Medvědího ostrova se lodě rozdělí.","t":[0.45,2.87]},{"text":"Rijp se vydá na sever, Barents s Heemskerckem zamíří na východ, k Nové Zemi.","t":[3.37,8.6]},{"text":"Plují podél jejích břehů stále dál na sever, v srpnu obeplují její nejsevernější cíp, a pak je led sevře.","t":[9.1,16.92]},{"text":"Odtud už vypráví sám deník, slovy Gerrita de Veera, tak jak je dnes najdete na panelech v norském Tromsø.","t":[17.42,24.49]}]},{"id":"d01","kind":"diary","chapter":"II · Zima v ledu","date":"26. srpna 1596","title":"Sevřeni ledem","snow":0.25,"wind":0.6,"images":[{"src":"rp209","at":0,"moves":[[0,0.45,0.45,1.05],[2,0.42,0.5,1.25],[3,0.27,0.66,1.65]]}],"audio":"audio/d01.mp3","duration":23.31,"sentences":[{"text":"Uvízli jsme v Ledovém přístavu a nemohli jsme se pohnout ani dopředu, ani zpátky.","t":[0.45,5.74]},{"text":"Všechno, co jsme dělali, abychom si v ledu otevřeli cestu, bylo marné.","t":[6.24,10.9]},{"text":"Když se led dal do pohybu, málem jsme přišli o tři muže.","t":[11.4,15.0]},{"text":"Zachránili se jen tak, že se bleskově chytili lan, která visela přes bok lodi.","t":[15.5,20.48]},{"text":"Byl to hrůzný pohled.","t":[20.98,22.71]}]},{"id":"d02","kind":"diary","chapter":"II · Zima v ledu","date":"28. srpna 1596","title":"Led zvedl loď","snow":0.25,"wind":0.6,"images":[{"src":"rp210","at":0,"moves":[[0,0.6,0.5,1.08],[1,0.62,0.42,1.3],[2,0.75,0.62,1.5],[3,0.12,0.45,1.6]]}],"audio":"audio/d02.mp3","duration":24.86,"sentences":[{"text":"Led tlačil na loď tak prudce, že jsme se báli, že praskne.","t":[0.45,4.37]},{"text":"Najednou ji ale vyzdvihl vzhůru.","t":[4.87,6.98]},{"text":"Willem Barents a ještě jeden muž byli ve velkém nebezpečí, protože zrovna leželi na ledu a měřili, jak vysoko byla příď vytlačena.","t":[7.48,16.43]},{"text":"Uprostřed toho zmatku jsme spustili na led jeden člun a druhý, s několika sudy chleba, jsme vytáhli na břeh.","t":[16.93,24.26]}]},{"id":"d03","kind":"diary","chapter":"II · Zima v ledu","date":"11. září 1596","title":"Dřevo z moře","snow":0.3,"wind":0.55,"images":[{"src":"rp212","at":0,"moves":[[0,0.5,0.5,1.0],[1,0.85,0.3,1.6],[3,0.45,0.58,1.4],[5,0.12,0.22,1.55]]}],"audio":"audio/d03.mp3","duration":31.99,"sentences":[{"text":"Bylo jasné, že tu musíme přečkat zimu.","t":[0.45,3.01]},{"text":"Museli jsme postavit dům, který by nás chránil před mrazem a divokou zvěří.","t":[3.51,8.41]},{"text":"Bůh nám seslal dřevo: kmeny, které k Nové Zemi připluly přes moře.","t":[8.91,13.52]},{"text":"Na saních jsme je táhli na staveniště, dvakrát denně, celých patnáct dní, a cesta tam a zpátky měřila skoro dvě míle.","t":[14.02,22.39]},{"text":"Byla to nesmírná dřina, ale museli jsme, a tak jsme to zvládli.","t":[22.89,27.19]},{"text":"Kdybychom začali o týden později, nedokázali bychom to.","t":[27.69,31.39]}]},{"id":"d04","kind":"diary","chapter":"II · Zima v ledu","date":"15. září 1596","title":"Tři medvědi","snow":0.3,"wind":0.5,"images":[{"src":"rp211","at":0,"moves":[[0,0.5,0.5,1.0],[2,0.38,0.6,1.7],[4,0.2,0.42,1.5],[6,0.56,0.52,1.3]]}],"audio":"audio/d04.mp3","duration":33.83,"sentences":[{"text":"K lodi přišli tři lední medvědi.","t":[0.45,2.79]},{"text":"Jeden zůstal ležet za ledovou krou, dva zamířili přímo k nám.","t":[3.29,7.75]},{"text":"Jeden se pustil do masa, které jsme nechali v kádi na ledu vymáčet, ale vzápětí ho zasáhla kulka a padl mrtev.","t":[8.25,15.56]},{"text":"Druhý nechápal, co se stalo. Dlouho stál a očichával svého druha, pak odešel.","t":[16.06,21.93]},{"text":"Za chvíli se ale vrátil, postavil se na zadní a chystal se zaútočit.","t":[22.43,26.86]},{"text":"I jeho jsme zastřelili.","t":[27.36,28.73]},{"text":"Postavili jsme ho na všechny čtyři a nechali ho tak zmrznout.","t":[29.23,33.23]}]},{"id":"d05","kind":"diary","chapter":"II · Zima v ledu","date":"2. října 1596","title":"Stavba domu","snow":0.35,"wind":0.5,"images":[{"src":"rp213","at":0,"moves":[[0,0.5,0.5,1.0],[1,0.2,0.3,1.55],[3,0.55,0.65,1.4]]}],"audio":"audio/d05.mp3","duration":24.92,"sentences":[{"text":"Začali jsme stavět dům a přitahovali trámy.","t":[0.45,3.52]},{"text":"Na hotovou kostru jsme postavili kus ledu jako stromek, tak jak se to při stavbě domu odjakživa dělá.","t":[4.02,10.46]},{"text":"Kmeny jsme kladli na norský způsob a spáry mezi nimi utěsnili, aby dovnitř nefoukal mráz ani sníh.","t":[10.96,18.26]},{"text":"Dům jsme pokryli prkny, postavili komín a před vchod přistavěli závětří.","t":[18.76,24.32]}]},{"id":"d06","kind":"diary","chapter":"II · Zima v ledu","date":"25. října 1596","title":"Medvědi u saní","snow":0.45,"wind":0.6,"images":[{"src":"rp214","at":0,"moves":[[0,0.5,0.5,1.0],[0,0.8,0.72,1.5],[2,0.12,0.85,1.6],[4,0.7,0.35,1.4],[6,0.5,0.5,1.1]]}],"audio":"audio/d06.mp3","duration":36.69,"sentences":[{"text":"Byli jsme zapřažení do saní a táhli poslední náklad k domu, když se proti nám náhle vynořili tři medvědi.","t":[0.45,7.47]},{"text":"Vyděšeně jsme vyskočili z postrojů a utíkali k lodi.","t":[7.97,11.42]},{"text":"Jeden z nás spadl do trhliny v ledu, dva další zůstali u saní a bránili se halapartnami.","t":[11.92,17.71]},{"text":"Medvědi se ale pustili za těmi, kdo běželi k lodi, a tak se ten, který spadl, i oba muži u saní dostali do bezpečí.","t":[18.21,26.08]},{"text":"Medvědi se snažili vylézt na palubu.","t":[26.58,28.92]},{"text":"Házeli jsme po nich polena, a když se za nimi hnali, bodali jsme je halapartnami.","t":[29.42,34.26]},{"text":"Nakonec zmizeli.","t":[34.76,36.09]}]},{"id":"d07","kind":"diary","chapter":"II · Zima v ledu","date":"1. prosince 1596","title":"Zrádné teplo","snow":0.6,"wind":0.7,"images":[{"src":"rp215","at":0,"moves":[[0,0.48,0.25,1.35],[1,0.42,0.4,1.15],[3,0.28,0.75,1.55]]}],"audio":"audio/d07.mp3","duration":23.14,"sentences":[{"text":"Abychom zahnali krutou zimu, pálili jsme uhlí a ucpali komín i dveře, aby nám to vzácné teplo neuniklo.","t":[0.45,7.71]},{"text":"Jenže z toho jsme byli ospalí a motala se nám hlava.","t":[8.21,11.5]},{"text":"Málem jsme všichni skončili v nebi a nikdo by už o tom nemohl vyprávět.","t":[12.0,16.52]},{"text":"Nebezpečí jsme naštěstí včas poznali, a tak jsme vyšli ven spravit pasti na lišky.","t":[17.02,22.54]}]},{"id":"c01","kind":"context","chapter":"II · Zima v ledu","date":"listopad 1596 – leden 1597","title":"Polární noc","snow":0.9,"wind":0.85,"images":[{"src":"ng22","at":0,"moves":[[0,0.5,0.5,1.0],[2,0.45,0.45,1.35],[3,0.48,0.62,1.55]]},{"src":"rp216","at":4,"moves":[[4,0.4,0.3,1.25],[6,0.84,0.7,1.6]]}],"audio":"audio/c01.mp3","duration":42.36,"sentences":[{"text":"Tady deník přeskakuje celou zimu. Doplňme, co o ní víme.","t":[0.45,4.44]},{"text":"Počátkem listopadu zmizelo slunce a na téměř tři měsíce přišla polární noc.","t":[4.94,10.45]},{"text":"Celá posádka se tísnila v jediné místnosti. Spali na pryčnách podél stěn, uprostřed hořel oheň a sníh zavál dům až po střechu.","t":[10.95,20.35]},{"text":"Jedli lišky chycené do pastí a z jejich kožešin si dělali čepice.","t":[20.85,25.2]},{"text":"Dvacátého čtvrtého ledna 1597 spatřili nad obzorem slunce, o dva týdny dřív, než podle výpočtů čekali.","t":[25.7,34.39]},{"text":"Tomuto optickému klamu se dodnes říká efekt Nové Země.","t":[34.89,38.79]},{"text":"A se sluncem se vrátili i medvědi.","t":[39.29,41.76]}]},{"id":"d09","kind":"diary","chapter":"III · Cesta domů","date":"30.–31. května 1597","title":"Příprava člunů","snow":0.2,"wind":0.5,"images":[{"src":"rp218","at":0,"moves":[[0,0.5,0.18,1.45],[1,0.45,0.55,1.2],[2,0.3,0.7,1.5]]}],"audio":"audio/d09.mp3","duration":19.44,"sentences":[{"text":"Loď zůstávala pevně sevřená ledem a bylo jasné, že ji už neuvolníme.","t":[0.45,5.37]},{"text":"Upravovali jsme proto oba otevřené čluny, aby vydržely na moři.","t":[5.87,10.03]},{"text":"Čekala nás plavba dlouhá přes tři sta mil podél pobřeží, než se dostaneme na druhou stranu Bílého moře, kde už žijí lidé.","t":[10.53,18.84]}]},{"id":"d10","kind":"diary","chapter":"III · Cesta domů","date":"12. června 1597","title":"Cesta k moři","snow":0.15,"wind":0.5,"images":[{"src":"rp219","at":0,"moves":[[0,0.5,0.5,1.0],[0,0.3,0.5,1.4],[1,0.86,0.72,1.65],[3,0.6,0.3,1.3]]}],"audio":"audio/d10.mp3","duration":20.39,"sentences":[{"text":"S velkou námahou jsme si sekerami, krumpáči a dalším nářadím prosekali cestu mezi ledovými kopci, abychom mohli dotáhnout čluny k vodě.","t":[0.45,9.67]},{"text":"Z moře vylezl medvěd a málem jednoho z nás chytil.","t":[10.17,13.62]},{"text":"Zasáhla ho rána z muškety.","t":[14.12,16.1]},{"text":"Utekl, ale nakonec jsme ho stejně zastřelili.","t":[16.6,19.79]}]},{"id":"d11","kind":"diary","chapter":"III · Cesta domů","date":"13. června 1597","title":"Sbohem, Nová Země","snow":0.1,"wind":0.45,"images":[{"src":"rp220","at":0,"moves":[[0,0.5,0.5,1.0],[1,0.62,0.38,1.6],[2,0.45,0.7,1.3],[3,0.5,0.45,1.1]]}],"audio":"audio/d11.mp3","duration":25.6,"sentences":[{"text":"Dotáhli jsme čluny k vodě a s nimi náklad: zásoby i obchodní zboží.","t":[0.45,5.44]},{"text":"Přinesli jsme také Willema Barentse a Claese Andriesze, kteří byli oba nemocní.","t":[5.94,11.02]},{"text":"Pak jsme se, odevzdáni Boží milosti, vydali na cestu.","t":[11.52,15.18]},{"text":"Toužili jsme po domově a děkovali Bohu, že jsme se dožili chvíle, kdy můžeme opustit tu divokou, pustou a krutě studenou zemi.","t":[15.68,25.0]}]},{"id":"d12","kind":"diary","chapter":"III · Cesta domů","date":"17.–20. června 1597","title":"Smrt Willema Barentse","snow":0.1,"wind":0.4,"images":[{"src":"rp221","at":0,"moves":[[0,0.5,0.5,1.0],[1,0.72,0.6,1.4],[2,0.18,0.72,1.45],[3,0.5,0.42,1.12]]}],"audio":"audio/d12.mp3","duration":27.34,"sentences":[{"text":"Plovoucí led sevřel čluny tak, že je málem rozdrtil.","t":[0.45,4.17]},{"text":"Byli jsme ve velkém nebezpečí, ale na poslední chvíli se nám podařilo dostat lano na pevný led a čluny na něj vytáhnout.","t":[4.67,12.48]},{"text":"Nemocné i všechen náklad jsme vynesli ven a čluny opravili.","t":[12.98,16.97]},{"text":"Právě tady, dvacátého června 1597, zemřel Willem Barents.","t":[17.47,23.18]},{"text":"A téměř ve stejnou chvíli i Claes Andriesz.","t":[23.68,26.74]}]},{"id":"d13","kind":"diary","chapter":"III · Cesta domů","date":"28.–29. června 1597","title":"Noční hlídka","snow":0.1,"wind":0.45,"images":[{"src":"rp222","at":0,"moves":[[0,0.62,0.38,1.4],[2,0.5,0.5,1.05],[3,0.42,0.75,1.45],[5,0.62,0.78,1.5]]}],"audio":"audio/d13.mp3","duration":26.4,"sentences":[{"text":"Led nás znovu donutil vynést všechen náklad i čluny na led.","t":[0.45,4.72]},{"text":"Nad čluny jsme natáhli plachtu jako stan a ulehli, zatímco jeden muž držel hlídku.","t":[5.22,11.15]},{"text":"Kolem půlnoci se k nám blížili tři medvědi.","t":[11.65,14.55]},{"text":"Jednoho jsme zastřelili a ostatní utekli.","t":[15.05,17.83]},{"text":"Druhý den se ale vrátili.","t":[18.33,20.03]},{"text":"Odtáhli mrtvého medvěda kus stranou a hodovali na něm, dokud jsme je nezahnali.","t":[20.53,25.8]}]},{"id":"d14","kind":"diary","chapter":"III · Cesta domů","date":"1. července 1597","title":"Kry pod nohama","snow":0.1,"wind":0.55,"images":[{"src":"rp223","at":0,"moves":[[0,0.5,0.5,1.0],[0,0.6,0.62,1.4],[2,0.3,0.68,1.5],[4,0.5,0.5,1.1]]}],"audio":"audio/d14.mp3","duration":24.87,"sentences":[{"text":"Led se na nás tlačil ze všech stran a jeden člun byl téměř rozdrcen.","t":[0.45,5.33]},{"text":"Přišli jsme o velkou část nákladu.","t":[5.83,8.31]},{"text":"Když jsme se snažili zachránit jednu věc, jiná spadla do vody.","t":[8.81,12.71]},{"text":"Kry se nám lámaly pod nohama, vršily se proti pevnému ledu a praskaly, zatímco jsme na nich stáli.","t":[13.21,19.64]},{"text":"Snadno jsme si mohli rozdrtit nohy, ba mohlo nás to stát život.","t":[20.14,24.27]}]},{"id":"d15","kind":"diary","chapter":"III · Cesta domů","date":"20. července 1597","title":"Volné moře","snow":0.0,"wind":0.4,"images":[{"src":"rp224","at":0,"moves":[[0,0.5,0.5,1.0],[1,0.6,0.62,1.4],[2,0.28,0.45,1.4],[3,0.5,0.3,1.15]]}],"audio":"audio/d15.mp3","duration":24.57,"sentences":[{"text":"Konečně jsme spustili čluny z pevného ledu na vodu, na východní straně Křížového ostrova.","t":[0.45,6.01]},{"text":"Se severovýchodním větrem jsme pluli na západojihozápad a postupovali skvěle.","t":[6.51,11.78]},{"text":"Minuli jsme Admiralitní ostrov, záliv Lomsbay a mys Plancius.","t":[12.28,17.07]},{"text":"Mysleli jsme, že led už máme za sebou. Jenže o šedesát mil dál nás sevřel znovu.","t":[17.57,23.97]}]},{"id":"d16","kind":"diary","chapter":"III · Cesta domů","date":"28. července 1597","title":"Zase mezi lidmi","snow":0.0,"wind":0.3,"images":[{"src":"rp225","at":0,"moves":[[0,0.5,0.5,1.0],[1,0.8,0.5,1.45],[2,0.56,0.55,1.55],[4,0.25,0.5,1.4]]}],"audio":"audio/d16.mp3","duration":26.74,"sentences":[{"text":"Po dlouhém bloudění jsme spatřili dvě ruské lodje, malé plachetnice, a na břehu lidi.","t":[0.45,6.31]},{"text":"Rusové nás poznali, protože už dříve byli na palubě naší lodi v průlivu u ostrova Vajgač.","t":[6.81,12.82]},{"text":"Smutně jsme se na sebe dívali, ale nemohli jsme si mnoho říct.","t":[13.32,17.3]},{"text":"Rusové byli velmi laskaví, bylo jim nás líto.","t":[17.8,21.04]},{"text":"Děkovali jsme Bohu, že jsme po třinácti měsících zase mezi lidmi.","t":[21.54,26.14]}]},{"id":"d17","kind":"diary","chapter":"III · Cesta domů","date":"16. srpna 1597","title":"Ruská lodja","snow":0.0,"wind":0.35,"images":[{"src":"rp226","at":0,"moves":[[0,0.5,0.45,1.0],[2,0.5,0.5,1.35],[3,0.42,0.25,1.4],[4,0.3,0.7,1.4]]}],"audio":"audio/d17.mp3","duration":27.27,"sentences":[{"text":"Na moři jsme potkali další ruskou lodju.","t":[0.45,2.87]},{"text":"Mysleli jsme, že už jsme přepluli Bílé moře, ale Rusové nám vysvětlili, že jsme ještě ani neminuli mys Kanin.","t":[3.37,10.83]},{"text":"Byli velmi přátelští a prodali nám slaninu, mouku, máslo a med.","t":[11.33,16.61]},{"text":"Ukázali nám správný směr a my znovu nabrali odvahu.","t":[17.11,20.73]},{"text":"Přesto jsme měli starost o své druhy z druhého člunu, který jsme cestou ztratili z dohledu.","t":[21.23,26.67]}]},{"id":"d18","kind":"diary","chapter":"III · Cesta domů","date":"21. srpna 1597","title":"Shledání","snow":0.0,"wind":0.3,"images":[{"src":"rp227","at":0,"moves":[[0,0.5,0.5,1.0],[1,0.5,0.45,1.25],[3,0.38,0.85,1.6],[4,0.75,0.16,1.55]]}],"audio":"audio/d18.mp3","duration":23.81,"sentences":[{"text":"Po dlouhém putování jsme dorazili na západní stranu Bílého moře.","t":[0.45,4.48]},{"text":"Našli jsme tu ruskou lodju a třináct Rusů. Byli velmi pohostinní a vzali nás k sobě do světnice.","t":[4.98,11.76]},{"text":"Bydleli tu také dva chudí Sámové, kterým se tehdy říkalo Laponci, se ženami a dětmi.","t":[12.26,17.95]},{"text":"A tady, zcela nečekaně, jsme potkali naše druhy ze ztraceného člunu.","t":[18.45,23.21]}]},{"id":"d19","kind":"diary","chapter":"III · Cesta domů","date":"25. srpna 1597","title":"Kola","snow":0.0,"wind":0.3,"images":[{"src":"rp228","at":0,"moves":[[0,0.25,0.18,1.6],[1,0.82,0.65,1.5],[4,0.5,0.5,1.0],[6,0.6,0.85,1.55],[7,0.15,0.6,1.55]]}],"audio":"audio/d19.mp3","duration":39.21,"sentences":[{"text":"Doplouváme k ostrovu Kildin.","t":[0.45,2.61]},{"text":"Na pevnině jsme narazili na tři Rusy, kteří bydleli v malé chatrči.","t":[3.11,7.18]},{"text":"Řekli nám, že Kola není daleko, a poslali s jedním z nás průvodce, aby zjistil, jestli tam nekotví loď, která by plula do Holandska.","t":[7.68,16.73]},{"text":"A kotvila. Stál tam Jan Cornelisz Rijp, ten, který s námi před rokem vyplul.","t":[17.23,22.78]},{"text":"Připlul nám naproti se vším možným jídlem i pitím.","t":[23.28,26.79]},{"text":"Spolu s ním jsme se vydali do Koly.","t":[27.29,29.42]},{"text":"Rytina ukazuje město a kupecký dvůr,","t":[29.92,33.04]},{"text":"a také Rusy, kteří nosí člun na ramenou, když přecházejí z jedné řeky do druhé.","t":[33.26,38.61]}]},{"id":"e01","kind":"epilogue","chapter":"Epilog","date":"listopad 1597","title":"Návrat","snow":0.0,"wind":0.3,"images":[{"src":"rp229","at":0,"moves":[[0,0.5,0.5,1.0],[1,0.62,0.45,1.35],[3,0.3,0.3,1.5],[4,0.5,0.5,1.05]]}],"audio":"audio/e01.mp3","duration":24.47,"sentences":[{"text":"Na Rijpově lodi se trosečníci vrátili domů. Do Amsterdamu dorazili začátkem listopadu 1597.","t":[0.45,7.95]},{"text":"Z celé posádky, která v ledu přezimovala, jich přežilo jen dvanáct.","t":[8.45,13.08]},{"text":"Kniha Gerrita de Veera vyšla hned následující rok a brzy ji překládali do dalších jazyků.","t":[13.58,19.66]},{"text":"Moře, kterým se plavili, dnes nese Barentsovo jméno.","t":[20.16,23.87]}]},{"id":"e02","kind":"epilogue","chapter":"Epilog","date":"1871","title":"Chata, která přečkala staletí","snow":0.35,"wind":0.5,"images":[{"src":"rp215","at":0,"moves":[[0,0.42,0.38,1.1],[1,0.4,0.38,1.4],[3,0.5,0.5,1.05]]}],"audio":"audio/e02.mp3","duration":31.07,"sentences":[{"text":"Chata na Nové Zemi zůstala stát.","t":[0.45,2.78]},{"text":"V roce 1871 ji objevil norský kapitán Elling Carlsen, rodák z Tromsø.","t":[3.28,9.77]},{"text":"Našel ji téměř netknutou, tak jak ji posádka v roce 1597 opustila: měděné kotlíky, sud, truhlu s nářadím, hodiny, flétnu i oblečení.","t":[10.27,22.05]},{"text":"Část jeho nálezů je dnes v Rijksmuseu v Amsterdamu a část v Tromsø, ve městě, kde visí i panely s tímto deníkem.","t":[22.55,30.47]}]},{"id":"z99","kind":"credits","snow":0.4,"wind":0.4,"hold":14,"images":[{"src":"rp205","at":0,"moves":[[0,0.5,0.5,1.1],[0,0.5,0.5,1.2]]}],"audio":null,"duration":14,"sentences":[]}]};
+/*DATA-END*/
+</script>
+<script>
+(() => {
+  const P = window.PRESENTATION;
+  const slides = P.slides;
+  const $ = (s) => document.querySelector(s);
+  const body = document.body;
+  const voice = $('#voice');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const LEAD = 0.9, LEAD_CHAPTER = 3.0, TAIL = 1.3, DRIFT = reduce ? 0 : 0.005;
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('zajatci-' + k); return v === null ? d : v === '1'; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem('zajatci-' + k, v ? '1' : '0'); } catch {} },
+  };
+
+  // ---------- příprava dat ----------
+  const imgCache = new Map();
+  function loadImg(src) {
+    if (!imgCache.has(src)) {
+      const im = new Image();
+      im.decoding = 'async';
+      im.src = 'img/' + src + '.webp';
+      const p = (im.decode ? im.decode() : new Promise((r) => (im.onload = r))).catch(() => {}).then(() => im);
+      imgCache.set(src, p);
+    }
+    return imgCache.get(src);
+  }
+
+  const sentStart = (s, i) => (s.sentences.length ? s.sentences[Math.min(i, s.sentences.length - 1)].t[0] : 0);
+  const sentEnd = (s, i) => (s.sentences.length ? s.sentences[Math.min(i, s.sentences.length - 1)].t[1] : s.duration);
+
+  slides.forEach((s, si) => {
+    const prevCh = si > 0 ? slides[si - 1].chapter : null;
+    s.chapterStart = !!s.chapter && s.chapter !== prevCh && s.kind !== 'title';
+    s.lead = s.chapterStart ? LEAD_CHAPTER : si === 0 ? 0.6 : LEAD;
+    s.images.forEach((im, ii) => {
+      im.show = ii === 0 ? -s.lead : sentStart(s, im.at) - 0.8;
+      const groups = {};
+      im.moves.forEach((m, k) => (groups[m[0]] = groups[m[0]] || []).push(k));
+      const keys = im.moves.map((m, k) => {
+        const g = groups[m[0]], pos = g.indexOf(k);
+        const a = sentStart(s, m[0]), b = s.sentences.length ? sentEnd(s, m[0]) : s.duration;
+        return { t: a + ((b - a) * pos) / g.length, cx: m[1], cy: m[2], z: m[3] };
+      });
+      keys[0].t = im.show;
+      keys.forEach((K, k) => {
+        const next = k + 1 < keys.length ? keys[k + 1].t : s.duration + TAIL + 2;
+        K.travel = k === 0 ? 0 : Math.min(4.8, Math.max(1.8, (next - K.t) * 0.6));
+      });
+      im.keys = keys;
+    });
+  });
+  const total = slides.reduce((a, s) => a + s.duration, 0);
+
+  // ---------- kamera ----------
+  const ease = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : 0.5 - 0.5 * Math.cos(Math.PI * u));
+  function poseAt(keys, t) {
+    let k = 0;
+    while (k + 1 < keys.length && keys[k + 1].t <= t) k++;
+    const K = keys[k];
+    const arrive = K.t + K.travel;
+    if (k === 0 || t >= arrive || reduce) {
+      return { cx: K.cx, cy: K.cy, z: K.z * (1 + DRIFT * Math.max(0, t - arrive)) };
+    }
+    const Pk = keys[k - 1];
+    const fromZ = Pk.z * (1 + DRIFT * Math.max(0, K.t - (Pk.t + Pk.travel)));
+    const u = ease((t - K.t) / K.travel);
+    return { cx: Pk.cx + (K.cx - Pk.cx) * u, cy: Pk.cy + (K.cy - Pk.cy) * u, z: fromZ * Math.pow(K.z / fromZ, u) };
+  }
+
+  const camEls = [...document.querySelectorAll('.cam')].map((el) => ({ el, img: el.querySelector('img'), keys: null, t: 0, spin: false, live: false }));
+  let camFront = 0;
+
+  function placeCam(c, W, H) {
+    const im = c.img;
+    const iw = im.naturalWidth, ih = im.naturalHeight;
+    if (!iw) return;
+    const p = poseAt(c.keys, c.t);
+    let s, tx, ty, extra = '';
+    if (c.spin) {
+      const portrait = W / H < 0.9;
+      const d = portrait ? Math.min(W * 0.95, H * 0.55) : Math.min(H * 0.98, W * 0.5);
+      s = (d / Math.min(iw, ih)) * p.z * 0.98;
+      const cxv = portrait ? W / 2 : Math.max(W * 0.68, W - d * 0.5 - W * 0.03), cyv = portrait ? H * 0.33 : H / 2;
+      tx = cxv - (iw * s) / 2;
+      ty = cyv - (ih * s) / 2;
+      const ang = reduce ? 0 : (performance.now() / 1000) * 1.6;
+      extra = ` translate(${iw / 2}px, ${ih / 2}px) rotate(${ang}deg) translate(${-iw / 2}px, ${-ih / 2}px)`;
+    } else {
+      const portrait = W / H < 0.9;
+      const base = portrait ? W / iw : Math.max(W / iw, H / ih);
+      s = base * p.z;
+      const dw = iw * s, dh = ih * s;
+      tx = W / 2 - p.cx * dw;
+      ty = H / 2 - p.cy * dh;
+      tx = dw >= W ? Math.min(0, Math.max(W - dw, tx)) : (W - dw) / 2;
+      ty = dh >= H ? Math.min(0, Math.max(H - dh, ty)) : (H - dh) / 2 - H * 0.1;
+    }
+    im.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0) scale(${s.toFixed(5)})${extra}`;
+  }
+
+  async function showImage(imgSpec, startT) {
+    const tk = token;
+    const src = await loadImg(imgSpec.src);
+    if (tk !== token) return;
+    const c = camEls[1 - camFront];
+    c.img.src = src.src;
+    c.img.width = src.naturalWidth;
+    c.img.height = src.naturalHeight;
+    c.keys = imgSpec.keys;
+    c.t = startT;
+    c.spin = !!imgSpec.spin;
+    c.el.classList.toggle('disc', c.spin);
+    c.live = true;
+    c.bind = imgSpec;
+    placeCam(c, innerWidth, innerHeight);
+    camEls[camFront].el.classList.remove('on');
+    c.el.classList.add('on');
+    camFront = 1 - camFront;
+  }
+
+  // ---------- sníh ----------
+  const canvas = $('#snow'), ctx = canvas.getContext('2d');
+  let flakes = [], snowLevel = 0, snowTarget = 0, windLevel = 0, windTarget = 0;
+  const flakeColor = 'rgba(' + getComputedStyle(document.documentElement).getPropertyValue('--parchment-rgb').trim() + ', 0.8)';
+  function resize() {
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    canvas.width = innerWidth * dpr;
+    canvas.height = innerHeight * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  addEventListener('resize', resize);
+  resize();
+  for (let i = 0; i < 320; i++) {
+    flakes.push({ x: Math.random(), y: Math.random(), r: 0.6 + Math.random() * 2.2, v: 0.02 + Math.random() * 0.05, ph: Math.random() * 6.28, d: Math.random() });
+  }
+  function drawSnow(dt) {
+    const W = innerWidth, H = innerHeight;
+    ctx.clearRect(0, 0, W, H);
+    const n = Math.round(flakes.length * (reduce ? 0 : snowLevel));
+    if (!n) return;
+    const tnow = performance.now() / 1000;
+    ctx.fillStyle = flakeColor;
+    for (let i = 0; i < n; i++) {
+      const f = flakes[i];
+      f.y += f.v * (0.6 + f.r * 0.25) * dt;
+      f.x += (0.012 + windLevel * 0.09 * (0.5 + f.d)) * dt + Math.sin(tnow * 0.8 + f.ph) * 0.0006;
+      if (f.y > 1.02) { f.y = -0.02; f.x = Math.random(); }
+      if (f.x > 1.02) f.x -= 1.04;
+      ctx.globalAlpha = 0.25 + f.d * 0.55;
+      ctx.beginPath();
+      ctx.arc(f.x * W, f.y * H, f.r, 0, 6.283);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ---------- vítr (Web Audio) ----------
+  let actx = null, windGain = null, windOn = store.get('wind', true);
+  function initWind() {
+    if (actx) return;
+    try {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      const len = actx.sampleRate * 4, buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.2; }
+      const src = actx.createBufferSource();
+      src.buffer = buf; src.loop = true;
+      const bp = actx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = 420; bp.Q.value = 0.7;
+      const lfo = actx.createOscillator(), lfoAmt = actx.createGain();
+      lfo.frequency.value = 0.07; lfoAmt.gain.value = 260;
+      lfo.connect(lfoAmt).connect(bp.frequency);
+      const swell = actx.createOscillator(), swellAmt = actx.createGain(), swellGain = actx.createGain();
+      swell.frequency.value = 0.11; swellAmt.gain.value = 0.35; swellGain.gain.value = 0.65;
+      swell.connect(swellAmt).connect(swellGain.gain);
+      windGain = actx.createGain(); windGain.gain.value = 0;
+      src.connect(bp).connect(swellGain).connect(windGain).connect(actx.destination);
+      src.start(); lfo.start(); swell.start();
+    } catch { actx = null; }
+  }
+  let windSet = -1;
+  function updateWindAudio() {
+    if (!windGain) return;
+    const target = windOn && playing ? 0.16 * windLevel : 0;
+    if (Math.abs(target - windSet) < 0.004) return;
+    windSet = target;
+    windGain.gain.setTargetAtTime(target, actx.currentTime, 0.8);
+  }
+
+  // ---------- popisky, titulky, kapitoly ----------
+  const cap = $('#caption'), capCh = cap.querySelector('.cap-chapter'), capDate = cap.querySelector('.cap-date'), capTitle = cap.querySelector('.cap-title');
+  function setCaption(s) {
+    cap.classList.add('out');
+    cap.classList.remove('anim');
+    setTimeout(() => {
+      if (s.kind === 'title' || s.kind === 'credits') return;
+      capCh.textContent = s.chapter || '';
+      capDate.textContent = s.date || '';
+      capTitle.innerHTML = '';
+      (s.title || '').split(/(\s+)/).forEach((w, i) => {
+        const span = document.createElement('span');
+        span.className = 'w';
+        span.textContent = w;
+        span.style.animationDelay = 0.35 + i * 0.06 + 's';
+        capTitle.appendChild(span);
+      });
+      void cap.offsetWidth;
+      cap.classList.add('anim');
+      cap.classList.remove('out');
+    }, 650);
+  }
+  const chapterEl = $('#chapter');
+  function flashChapter(s) {
+    const [num, name] = s.chapter.split(' · ');
+    chapterEl.querySelector('.num').textContent = name ? num : '';
+    chapterEl.querySelector('.name').textContent = name || num;
+    chapterEl.classList.add('on');
+    setTimeout(() => chapterEl.classList.remove('on'), (LEAD_CHAPTER - 0.6) * 1000);
+  }
+  const subs = $('#subs'), subsSpan = subs.querySelector('span');
+  let ccOn = store.get('cc', false), lastSub = -2;
+  function updateSubs(s, t) {
+    if (!ccOn) return;
+    let idx = -1;
+    s.sentences.forEach((x, i) => { if (t >= x.t[0] - 0.15 && t <= x.t[1] + 0.35) idx = i; });
+    if (idx !== lastSub) {
+      lastSub = idx;
+      subsSpan.textContent = idx >= 0 ? s.sentences[idx].text : '';
+      subs.hidden = idx < 0;
+    }
+  }
+
+  // ---------- časová osa ----------
+  const timeline = $('#timeline'), tip = $('#tip');
+  const segs = slides.map((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'seg' + (s.chapterStart && i > 1 ? ' ch' : '');
+    el.style.flex = `${s.duration} 1 0`;
+    el.appendChild(document.createElement('i'));
+    timeline.appendChild(el);
+    return el;
+  });
+  function locate(clientX) {
+    for (let i = 0; i < segs.length; i++) {
+      const r = segs[i].getBoundingClientRect();
+      if (clientX <= r.right + 1.5 || i === segs.length - 1) {
+        return { i, off: Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * slides[i].duration, x: r.left + r.width / 2 };
+      }
+    }
+  }
+  timeline.addEventListener('pointermove', (e) => {
+    const L = locate(e.clientX), s = slides[L.i];
+    tip.innerHTML = '';
+    if (s.date) { const b = document.createElement('b'); b.textContent = s.date; tip.appendChild(b); }
+    tip.appendChild(document.createTextNode(s.title || (s.kind === 'title' ? 'Úvod' : 'Závěr')));
+    tip.style.left = Math.max(90, Math.min(innerWidth - 90, e.clientX)) + 'px';
+    tip.hidden = false;
+  });
+  timeline.addEventListener('pointerleave', () => (tip.hidden = true));
+  timeline.addEventListener('click', (e) => { const L = locate(e.clientX); go(L.i, L.off); });
+  timeline.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); go(cur + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); go(cur - 1); }
+  });
+  const fmt = (x) => `${Math.floor(x / 60)}:${String(Math.floor(x % 60)).padStart(2, '0')}`;
+
+  // ---------- přehrávání ----------
+  let cur = -1, slideT = 0, playing = false, started = false, audioStarted = false, imgShown = 0, token = 0, coverShown = false;
+  const cover = $('#cover'), credits = $('#credits');
+
+  function go(i, offset = 0) {
+    if (i < 0) i = 0;
+    if (i >= slides.length) return finish();
+    token++;
+    cur = i;
+    const s = slides[i];
+    credits.classList.toggle('on', s.kind === 'credits');
+    cover.classList.toggle('gone', started && s.kind !== 'title');
+    if (s.chapterStart && offset === 0) flashChapter(s);
+    setCaption(s);
+    lastSub = -2;
+    subs.hidden = true;
+    slideT = offset > 0 ? offset : -s.lead;
+    audioStarted = false;
+    voice.pause();
+    if (s.audio) { voice.src = s.audio; voice.load(); }
+    else voice.removeAttribute('src');
+    snowTarget = s.snow || 0;
+    windTarget = s.wind || 0;
+    // obrázek platný v čase slideT
+    let k = 0;
+    s.images.forEach((im, ii) => { if (im.show <= Math.max(slideT, -s.lead)) k = ii; });
+    imgShown = k;
+    showImage(s.images[k], slideT);
+    // přednačtení dalších snímků
+    [i + 1, i + 2].forEach((j) => slides[j] && slides[j].images.forEach((im) => loadImg(im.src)));
+    if (slides[i + 1] && slides[i + 1].audio) { const a = new Audio(); a.preload = 'auto'; a.src = slides[i + 1].audio; }
+    segs.forEach((el, j) => (el.firstChild.style.transform = `scaleX(${j < i ? 1 : 0})`));
+    if (offset > 0 && s.audio) {
+      const seek = () => { voice.currentTime = offset; voice.removeEventListener('loadedmetadata', seek); };
+      voice.addEventListener('loadedmetadata', seek);
+    }
+  }
+
+  function finish() {
+    playing = false;
+    voice.pause();
+    setPlayIcon();
+    credits.classList.add('on');
+    updateWindAudio();
+  }
+
+  function setPlayIcon() {
+    $('#play-icon').setAttribute('d', playing ? 'M7 5h4v14H7zM13 5h4v14h-4z' : 'M7 4.5v15l12.5-7.5z');
+    $('#play').setAttribute('aria-label', playing ? 'Pozastavit' : 'Přehrát');
+  }
+
+  function setPlaying(v) {
+    playing = v;
+    if (!v) voice.pause();
+    else if (audioStarted && slideT < slides[cur].duration) voice.play().catch(() => {});
+    if (actx && actx.state === 'suspended') actx.resume();
+    setPlayIcon();
+    updateWindAudio();
+    poke();
+  }
+
+  let wakeLock = null;
+  async function keepAwake() {
+    try { wakeLock = await navigator.wakeLock.request('screen'); } catch {}
+  }
+
+  $('#start').addEventListener('click', () => {
+    started = true;
+    body.classList.remove('pre');
+    cover.classList.add('playing');
+    initWind();
+    keepAwake();
+    go(0);
+    setPlaying(true);
+  });
+  $('#replay').addEventListener('click', () => { credits.classList.remove('on'); go(0); setPlaying(true); });
+  $('#play').addEventListener('click', () => {
+    if (cur >= slides.length - 1 && slideT >= slides[cur].duration) { go(0); setPlaying(true); return; }
+    setPlaying(!playing);
+  });
+  $('#prev').addEventListener('click', () => go(slideT > 4 ? cur : cur - 1));
+  $('#next').addEventListener('click', () => go(cur + 1));
+  const ccBtn = $('#cc'), windBtn = $('#wind');
+  function syncToggles() {
+    ccBtn.setAttribute('aria-pressed', String(ccOn));
+    windBtn.setAttribute('aria-pressed', String(windOn));
+    body.classList.toggle('cc', ccOn);
+    if (!ccOn) subs.hidden = true;
+  }
+  ccBtn.addEventListener('click', () => { ccOn = !ccOn; store.set('cc', ccOn); lastSub = -2; syncToggles(); });
+  windBtn.addEventListener('click', () => { windOn = !windOn; store.set('wind', windOn); initWind(); syncToggles(); updateWindAudio(); });
+  $('#fs').addEventListener('click', async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch {}
+  });
+  syncToggles();
+
+  addEventListener('keydown', (e) => {
+    if (!started || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === ' ' || e.key === 'k') { e.preventDefault(); setPlaying(!playing); }
+    else if (e.key === 'ArrowRight') go(cur + 1);
+    else if (e.key === 'ArrowLeft') go(slideT > 4 ? cur : cur - 1);
+    else if (e.key === 'c') ccBtn.click();
+    else if (e.key === 'm') windBtn.click();
+    else if (e.key === 'f') $('#fs').click();
+    poke();
+  });
+
+  let idleTimer = 0;
+  function poke() {
+    body.classList.remove('idle');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => { if (playing) body.classList.add('idle'); }, 2800);
+  }
+  addEventListener('pointermove', poke);
+  addEventListener('pointerdown', poke);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && playing) keepAwake(); });
+
+  voice.addEventListener('ended', () => { audioStarted = true; });
+
+  // ---------- hlavní smyčka ----------
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+    const W = innerWidth, H = innerHeight;
+    if (cur < 0) {
+      // titulní obrazovka před spuštěním
+      if (!coverShown) { coverShown = true; showImage(slides[0].images[0], 0); }
+      snowTarget = slides[0].snow; windTarget = slides[0].wind;
+    } else {
+      const s = slides[cur];
+      if (playing) {
+        if (audioStarted && s.audio && !voice.paused && !voice.ended) slideT = voice.currentTime;
+        else slideT += dt;
+        if (s.audio && !audioStarted && slideT >= 0) {
+          audioStarted = true;
+          if (slideT > 0.05) voice.currentTime = slideT;
+          voice.play().catch(() => {});
+        }
+        if (slideT >= s.duration + (s.audio ? TAIL : 0)) {
+          if (cur + 1 < slides.length) go(cur + 1); else finish();
+        }
+      }
+      const s2 = slides[cur];
+      let k = 0;
+      s2.images.forEach((im, ii) => { if (im.show <= slideT) k = ii; });
+      if (k !== imgShown) { imgShown = k; showImage(s2.images[k], slideT); }
+      updateSubs(s2, slideT);
+      const prog = Math.max(0, Math.min(1, slideT / s2.duration));
+      segs[cur].firstChild.style.transform = `scaleX(${prog})`;
+      const elapsed = s2.duration * prog + slides.slice(0, cur).reduce((a, x) => a + x.duration, 0);
+      $('#clock').textContent = `${fmt(elapsed)} / ${fmt(total)}`;
+      timeline.setAttribute('aria-valuenow', String(Math.round((elapsed / total) * 100)));
+    }
+    camEls.forEach((c) => {
+      if (!c.live) return;
+      if (c === camEls[camFront]) { if (cur >= 0) c.t = slideT; else c.t += dt; }
+      else c.t += dt;
+      placeCam(c, W, H);
+    });
+    const kk = 1 - Math.exp(-dt / 2.5);
+    snowLevel += (snowTarget - snowLevel) * kk;
+    windLevel += (windTarget - windLevel) * kk;
+    drawSnow(dt);
+    updateWindAudio();
+    requestAnimationFrame(frame);
+  }
+
+  body.classList.add('pre');
+  $('#cred-voice').textContent = P.voice + ' · syntetický hlas';
+  $('#cover-meta').textContent = `Asi ${Math.round(total / 60)} minut · česky · zapněte si zvuk`;
+  setPlayIcon();
+  requestAnimationFrame(frame);
+})();
+</script>

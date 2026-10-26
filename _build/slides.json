@@ -1,0 +1,337 @@
+{
+  "title": "Zajatci ledu",
+  "subtitle": "Deník z poslední plavby Willema Barentse · 1596–1597",
+  "tts_replace": [
+    ["Gerrita de Veera", "Gerita de Véra"],
+    ["Gerrit de Veer", "Gerit de Vér"],
+    ["de Veer", "de Vér"],
+    ["Willem", "Vilem"],
+    ["Heemskerck", "Hémskerk"],
+    ["Cornelisz", "Kornelis"],
+    ["Rijp", "Rejp"],
+    ["Claese", "Klása"],
+    ["Claes", "Klás"],
+    ["Andriesze", "Andríse"],
+    ["Andriesz", "Andrís"],
+    ["Elling Carlsen", "Eling Karlsen"],
+    ["Tromsø", "Tromsé"],
+    ["Rijksmuse", "Rejksmuze"],
+    ["Spitsbergen", "Špicbergen"],
+    ["Lomsbay", "Lomsbej"],
+    ["1596–1597", "patnáct set devadesát šest až devadesát sedm"],
+    ["1596", "patnáct set devadesát šest"],
+    ["1597", "patnáct set devadesát sedm"],
+    ["1598", "patnáct set devadesát osm"],
+    ["1871", "osmnáct set sedmdesát jedna"]
+  ],
+  "slides": [
+    {
+      "id": "s00", "kind": "title", "snow": 0.5, "wind": 0.5,
+      "images": [{"src": "ng15", "at": 0, "spin": true, "moves": [[0, 0.5, 0.5, 1.05], [1, 0.5, 0.5, 1.25]]}],
+      "text": [
+        "Zajatci ledu.",
+        "Deník z poslední plavby Willema Barentse, z let 1596–1597."
+      ]
+    },
+    {
+      "id": "s01", "kind": "intro", "chapter": "I · Na sever", "date": "květen 1596", "title": "Dvě lodě na sever",
+      "snow": 0.0, "wind": 0.35,
+      "images": [{"src": "rp205", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [2, 0.3, 0.5, 1.35], [4, 0.72, 0.5, 1.35]]}],
+      "text": [
+        "Konec šestnáctého století.",
+        "Nizozemští kupci hledají cestu do Číny a Indie, která by se vyhnula portugalským a španělským lodím na jihu.",
+        "Co kdyby se dalo doplout na východ kolem severního pobřeží Ruska?",
+        "V květnu roku 1596 proto z Nizozemska vyplouvají dvě lodě.",
+        "Jednu vede Jacob van Heemskerck a jako hlavní navigátor s ním pluje zkušený mořeplavec Willem Barents.",
+        "Druhé lodi velí Jan Cornelisz Rijp."
+      ]
+    },
+    {
+      "id": "s02", "kind": "intro", "chapter": "I · Na sever", "date": "červen 1596", "title": "Medvědí ostrov a Špicberky",
+      "snow": 0.0, "wind": 0.35,
+      "images": [
+        {"src": "rp206", "at": 0, "moves": [[0, 0.5, 0.35, 1.05], [2, 0.45, 0.78, 1.45]]},
+        {"src": "rp208", "at": 4, "moves": [[4, 0.5, 0.5, 1.0], [5, 0.33, 0.33, 1.55]]}
+      ],
+      "text": [
+        "Na palubě je i Gerrit de Veer, který si celou cestu zapisuje.",
+        "Jeho deník vyjde v roce 1598 i s rytinami, na které se právě díváte.",
+        "V červnu lodě narazí na neznámý ostrov, u jehož břehů plave lední medvěd.",
+        "Námořníci s ním svedou dlouhý boj a ostrov pojmenují Medvědí.",
+        "O několik dní později spatří zemi plnou ostrých štítů.",
+        "Pojmenují ji Spitsbergen, Špičaté hory. Dnes je to největší ostrov souostroví Svalbard."
+      ]
+    },
+    {
+      "id": "s03", "kind": "intro", "chapter": "I · Na sever", "date": "červenec – srpen 1596", "title": "K Nové Zemi",
+      "snow": 0.15, "wind": 0.45,
+      "images": [{"src": "rp207", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [1, 0.58, 0.45, 1.3], [3, 0.5, 0.7, 1.45]]}],
+      "text": [
+        "U Medvědího ostrova se lodě rozdělí.",
+        "Rijp se vydá na sever, Barents s Heemskerckem zamíří na východ, k Nové Zemi.",
+        "Plují podél jejích břehů stále dál na sever, v srpnu obeplují její nejsevernější cíp, a pak je led sevře.",
+        "Odtud už vypráví sám deník, slovy Gerrita de Veera, tak jak je dnes najdete na panelech v norském Tromsø."
+      ]
+    },
+    {
+      "id": "d01", "kind": "diary", "chapter": "II · Zima v ledu", "date": "26. srpna 1596", "title": "Sevřeni ledem",
+      "snow": 0.25, "wind": 0.6,
+      "images": [{"src": "rp209", "at": 0, "moves": [[0, 0.45, 0.45, 1.05], [2, 0.42, 0.5, 1.25], [3, 0.27, 0.66, 1.65]]}],
+      "text": [
+        "Uvízli jsme v Ledovém přístavu a nemohli jsme se pohnout ani dopředu, ani zpátky.",
+        "Všechno, co jsme dělali, abychom si v ledu otevřeli cestu, bylo marné.",
+        "Když se led dal do pohybu, málem jsme přišli o tři muže.",
+        "Zachránili se jen tak, že se bleskově chytili lan, která visela přes bok lodi.",
+        "Byl to hrůzný pohled."
+      ]
+    },
+    {
+      "id": "d02", "kind": "diary", "chapter": "II · Zima v ledu", "date": "28. srpna 1596", "title": "Led zvedl loď",
+      "snow": 0.25, "wind": 0.6,
+      "images": [{"src": "rp210", "at": 0, "moves": [[0, 0.6, 0.5, 1.08], [1, 0.62, 0.42, 1.3], [2, 0.75, 0.62, 1.5], [3, 0.12, 0.45, 1.6]]}],
+      "text": [
+        "Led tlačil na loď tak prudce, že jsme se báli, že praskne.",
+        "Najednou ji ale vyzdvihl vzhůru.",
+        "Willem Barents a ještě jeden muž byli ve velkém nebezpečí, protože zrovna leželi na ledu a měřili, jak vysoko byla příď vytlačena.",
+        "Uprostřed toho zmatku jsme spustili na led jeden člun a druhý, s několika sudy chleba, jsme vytáhli na břeh."
+      ]
+    },
+    {
+      "id": "d03", "kind": "diary", "chapter": "II · Zima v ledu", "date": "11. září 1596", "title": "Dřevo z moře",
+      "snow": 0.3, "wind": 0.55,
+      "images": [{"src": "rp212", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [1, 0.85, 0.3, 1.6], [3, 0.45, 0.58, 1.4], [5, 0.12, 0.22, 1.55]]}],
+      "text": [
+        "Bylo jasné, že tu musíme přečkat zimu.",
+        "Museli jsme postavit dům, který by nás chránil před mrazem a divokou zvěří.",
+        "Bůh nám seslal dřevo: kmeny, které k Nové Zemi připluly přes moře.",
+        "Na saních jsme je táhli na staveniště, dvakrát denně, celých patnáct dní, a cesta tam a zpátky měřila skoro dvě míle.",
+        "Byla to nesmírná dřina, ale museli jsme, a tak jsme to zvládli.",
+        "Kdybychom začali o týden později, nedokázali bychom to."
+      ]
+    },
+    {
+      "id": "d04", "kind": "diary", "chapter": "II · Zima v ledu", "date": "15. září 1596", "title": "Tři medvědi",
+      "snow": 0.3, "wind": 0.5,
+      "images": [{"src": "rp211", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [2, 0.38, 0.6, 1.7], [4, 0.2, 0.42, 1.5], [6, 0.56, 0.52, 1.3]]}],
+      "text": [
+        "K lodi přišli tři lední medvědi.",
+        "Jeden zůstal ležet za ledovou krou, dva zamířili přímo k nám.",
+        "Jeden se pustil do masa, které jsme nechali v kádi na ledu vymáčet, ale vzápětí ho zasáhla kulka a padl mrtev.",
+        "Druhý nechápal, co se stalo. Dlouho stál a očichával svého druha, pak odešel.",
+        "Za chvíli se ale vrátil, postavil se na zadní a chystal se zaútočit.",
+        "I jeho jsme zastřelili.",
+        "Postavili jsme ho na všechny čtyři a nechali ho tak zmrznout."
+      ]
+    },
+    {
+      "id": "d05", "kind": "diary", "chapter": "II · Zima v ledu", "date": "2. října 1596", "title": "Stavba domu",
+      "snow": 0.35, "wind": 0.5,
+      "images": [{"src": "rp213", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [1, 0.2, 0.3, 1.55], [3, 0.55, 0.65, 1.4]]}],
+      "text": [
+        "Začali jsme stavět dům a přitahovali trámy.",
+        "Na hotovou kostru jsme postavili kus ledu jako stromek, tak jak se to při stavbě domu odjakživa dělá.",
+        "Kmeny jsme kladli na norský způsob a spáry mezi nimi utěsnili, aby dovnitř nefoukal mráz ani sníh.",
+        "Dům jsme pokryli prkny, postavili komín a před vchod přistavěli závětří."
+      ]
+    },
+    {
+      "id": "d06", "kind": "diary", "chapter": "II · Zima v ledu", "date": "25. října 1596", "title": "Medvědi u saní",
+      "snow": 0.45, "wind": 0.6,
+      "images": [{"src": "rp214", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [0, 0.8, 0.72, 1.5], [2, 0.12, 0.85, 1.6], [4, 0.7, 0.35, 1.4], [6, 0.5, 0.5, 1.1]]}],
+      "text": [
+        "Byli jsme zapřažení do saní a táhli poslední náklad k domu, když se proti nám náhle vynořili tři medvědi.",
+        "Vyděšeně jsme vyskočili z postrojů a utíkali k lodi.",
+        "Jeden z nás spadl do trhliny v ledu, dva další zůstali u saní a bránili se halapartnami.",
+        "Medvědi se ale pustili za těmi, kdo běželi k lodi, a tak se ten, který spadl, i oba muži u saní dostali do bezpečí.",
+        "Medvědi se snažili vylézt na palubu.",
+        "Házeli jsme po nich polena, a když se za nimi hnali, bodali jsme je halapartnami.",
+        "Nakonec zmizeli."
+      ]
+    },
+    {
+      "id": "d07", "kind": "diary", "chapter": "II · Zima v ledu", "date": "1. prosince 1596", "title": "Zrádné teplo",
+      "snow": 0.6, "wind": 0.7,
+      "images": [{"src": "rp215", "at": 0, "moves": [[0, 0.48, 0.25, 1.35], [1, 0.42, 0.4, 1.15], [3, 0.28, 0.75, 1.55]]}],
+      "text": [
+        "Abychom zahnali krutou zimu, pálili jsme uhlí a ucpali komín i dveře, aby nám to vzácné teplo neuniklo.",
+        "Jenže z toho jsme byli ospalí a motala se nám hlava.",
+        "Málem jsme všichni skončili v nebi a nikdo by už o tom nemohl vyprávět.",
+        "Nebezpečí jsme naštěstí včas poznali, a tak jsme vyšli ven spravit pasti na lišky."
+      ]
+    },
+    {
+      "id": "c01", "kind": "context", "chapter": "II · Zima v ledu", "date": "listopad 1596 – leden 1597", "title": "Polární noc",
+      "snow": 0.9, "wind": 0.85,
+      "images": [
+        {"src": "ng22", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [2, 0.45, 0.45, 1.35], [3, 0.48, 0.62, 1.55]]},
+        {"src": "rp216", "at": 4, "moves": [[4, 0.4, 0.3, 1.25], [6, 0.84, 0.7, 1.6]]}
+      ],
+      "text": [
+        "Tady deník přeskakuje celou zimu. Doplňme, co o ní víme.",
+        "Počátkem listopadu zmizelo slunce a na téměř tři měsíce přišla polární noc.",
+        "Celá posádka se tísnila v jediné místnosti. Spali na pryčnách podél stěn, uprostřed hořel oheň a sníh zavál dům až po střechu.",
+        "Jedli lišky chycené do pastí a z jejich kožešin si dělali čepice.",
+        "Dvacátého čtvrtého ledna 1597 spatřili nad obzorem slunce, o dva týdny dřív, než podle výpočtů čekali.",
+        "Tomuto optickému klamu se dodnes říká efekt Nové Země.",
+        "A se sluncem se vrátili i medvědi."
+      ]
+    },
+    {
+      "id": "d09", "kind": "diary", "chapter": "III · Cesta domů", "date": "30.–31. května 1597", "title": "Příprava člunů",
+      "snow": 0.2, "wind": 0.5,
+      "images": [{"src": "rp218", "at": 0, "moves": [[0, 0.5, 0.18, 1.45], [1, 0.45, 0.55, 1.2], [2, 0.3, 0.7, 1.5]]}],
+      "text": [
+        "Loď zůstávala pevně sevřená ledem a bylo jasné, že ji už neuvolníme.",
+        "Upravovali jsme proto oba otevřené čluny, aby vydržely na moři.",
+        "Čekala nás plavba dlouhá přes tři sta mil podél pobřeží, než se dostaneme na druhou stranu Bílého moře, kde už žijí lidé."
+      ]
+    },
+    {
+      "id": "d10", "kind": "diary", "chapter": "III · Cesta domů", "date": "12. června 1597", "title": "Cesta k moři",
+      "snow": 0.15, "wind": 0.5,
+      "images": [{"src": "rp219", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [0, 0.3, 0.5, 1.4], [1, 0.86, 0.72, 1.65], [3, 0.6, 0.3, 1.3]]}],
+      "text": [
+        "S velkou námahou jsme si sekerami, krumpáči a dalším nářadím prosekali cestu mezi ledovými kopci, abychom mohli dotáhnout čluny k vodě.",
+        "Z moře vylezl medvěd a málem jednoho z nás chytil.",
+        "Zasáhla ho rána z muškety.",
+        "Utekl, ale nakonec jsme ho stejně zastřelili."
+      ]
+    },
+    {
+      "id": "d11", "kind": "diary", "chapter": "III · Cesta domů", "date": "13. června 1597", "title": "Sbohem, Nová Země",
+      "snow": 0.1, "wind": 0.45,
+      "images": [{"src": "rp220", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [1, 0.62, 0.38, 1.6], [2, 0.45, 0.7, 1.3], [3, 0.5, 0.45, 1.1]]}],
+      "text": [
+        "Dotáhli jsme čluny k vodě a s nimi náklad: zásoby i obchodní zboží.",
+        "Přinesli jsme také Willema Barentse a Claese Andriesze, kteří byli oba nemocní.",
+        "Pak jsme se, odevzdáni Boží milosti, vydali na cestu.",
+        "Toužili jsme po domově a děkovali Bohu, že jsme se dožili chvíle, kdy můžeme opustit tu divokou, pustou a krutě studenou zemi."
+      ]
+    },
+    {
+      "id": "d12", "kind": "diary", "chapter": "III · Cesta domů", "date": "17.–20. června 1597", "title": "Smrt Willema Barentse",
+      "snow": 0.1, "wind": 0.4,
+      "images": [{"src": "rp221", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [1, 0.72, 0.6, 1.4], [2, 0.18, 0.72, 1.45], [3, 0.5, 0.42, 1.12]]}],
+      "text": [
+        "Plovoucí led sevřel čluny tak, že je málem rozdrtil.",
+        "Byli jsme ve velkém nebezpečí, ale na poslední chvíli se nám podařilo dostat lano na pevný led a čluny na něj vytáhnout.",
+        "Nemocné i všechen náklad jsme vynesli ven a čluny opravili.",
+        "Právě tady, dvacátého června 1597, zemřel Willem Barents.",
+        "A téměř ve stejnou chvíli i Claes Andriesz."
+      ]
+    },
+    {
+      "id": "d13", "kind": "diary", "chapter": "III · Cesta domů", "date": "28.–29. června 1597", "title": "Noční hlídka",
+      "snow": 0.1, "wind": 0.45,
+      "images": [{"src": "rp222", "at": 0, "moves": [[0, 0.62, 0.38, 1.4], [2, 0.5, 0.5, 1.05], [3, 0.42, 0.75, 1.45], [5, 0.62, 0.78, 1.5]]}],
+      "text": [
+        "Led nás znovu donutil vynést všechen náklad i čluny na led.",
+        "Nad čluny jsme natáhli plachtu jako stan a ulehli, zatímco jeden muž držel hlídku.",
+        "Kolem půlnoci se k nám blížili tři medvědi.",
+        "Jednoho jsme zastřelili a ostatní utekli.",
+        "Druhý den se ale vrátili.",
+        "Odtáhli mrtvého medvěda kus stranou a hodovali na něm, dokud jsme je nezahnali."
+      ]
+    },
+    {
+      "id": "d14", "kind": "diary", "chapter": "III · Cesta domů", "date": "1. července 1597", "title": "Kry pod nohama",
+      "snow": 0.1, "wind": 0.55,
+      "images": [{"src": "rp223", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [0, 0.6, 0.62, 1.4], [2, 0.3, 0.68, 1.5], [4, 0.5, 0.5, 1.1]]}],
+      "text": [
+        "Led se na nás tlačil ze všech stran a jeden člun byl téměř rozdrcen.",
+        "Přišli jsme o velkou část nákladu.",
+        "Když jsme se snažili zachránit jednu věc, jiná spadla do vody.",
+        "Kry se nám lámaly pod nohama, vršily se proti pevnému ledu a praskaly, zatímco jsme na nich stáli.",
+        "Snadno jsme si mohli rozdrtit nohy, ba mohlo nás to stát život."
+      ]
+    },
+    {
+      "id": "d15", "kind": "diary", "chapter": "III · Cesta domů", "date": "20. července 1597", "title": "Volné moře",
+      "snow": 0.0, "wind": 0.4,
+      "images": [{"src": "rp224", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [1, 0.6, 0.62, 1.4], [2, 0.28, 0.45, 1.4], [3, 0.5, 0.3, 1.15]]}],
+      "text": [
+        "Konečně jsme spustili čluny z pevného ledu na vodu, na východní straně Křížového ostrova.",
+        "Se severovýchodním větrem jsme pluli na západojihozápad a postupovali skvěle.",
+        "Minuli jsme Admiralitní ostrov, záliv Lomsbay a mys Plancius.",
+        "Mysleli jsme, že led už máme za sebou. Jenže o šedesát mil dál nás sevřel znovu."
+      ]
+    },
+    {
+      "id": "d16", "kind": "diary", "chapter": "III · Cesta domů", "date": "28. července 1597", "title": "Zase mezi lidmi",
+      "snow": 0.0, "wind": 0.3,
+      "images": [{"src": "rp225", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [1, 0.8, 0.5, 1.45], [2, 0.56, 0.55, 1.55], [4, 0.25, 0.5, 1.4]]}],
+      "text": [
+        "Po dlouhém bloudění jsme spatřili dvě ruské lodje, malé plachetnice, a na břehu lidi.",
+        "Rusové nás poznali, protože už dříve byli na palubě naší lodi v průlivu u ostrova Vajgač.",
+        "Smutně jsme se na sebe dívali, ale nemohli jsme si mnoho říct.",
+        "Rusové byli velmi laskaví, bylo jim nás líto.",
+        "Děkovali jsme Bohu, že jsme po třinácti měsících zase mezi lidmi."
+      ]
+    },
+    {
+      "id": "d17", "kind": "diary", "chapter": "III · Cesta domů", "date": "16. srpna 1597", "title": "Ruská lodja",
+      "snow": 0.0, "wind": 0.35,
+      "images": [{"src": "rp226", "at": 0, "moves": [[0, 0.5, 0.45, 1.0], [2, 0.5, 0.5, 1.35], [3, 0.42, 0.25, 1.4], [4, 0.3, 0.7, 1.4]]}],
+      "text": [
+        "Na moři jsme potkali další ruskou lodju.",
+        "Mysleli jsme, že už jsme přepluli Bílé moře, ale Rusové nám vysvětlili, že jsme ještě ani neminuli mys Kanin.",
+        "Byli velmi přátelští a prodali nám slaninu, mouku, máslo a med.",
+        "Ukázali nám správný směr a my znovu nabrali odvahu.",
+        "Přesto jsme měli starost o své druhy z druhého člunu, který jsme cestou ztratili z dohledu."
+      ]
+    },
+    {
+      "id": "d18", "kind": "diary", "chapter": "III · Cesta domů", "date": "21. srpna 1597", "title": "Shledání",
+      "snow": 0.0, "wind": 0.3,
+      "images": [{"src": "rp227", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [1, 0.5, 0.45, 1.25], [3, 0.38, 0.85, 1.6], [4, 0.75, 0.16, 1.55]]}],
+      "text": [
+        "Po dlouhém putování jsme dorazili na západní stranu Bílého moře.",
+        "Našli jsme tu ruskou lodju a třináct Rusů. Byli velmi pohostinní a vzali nás k sobě do světnice.",
+        "Bydleli tu také dva chudí Sámové, kterým se tehdy říkalo Laponci, se ženami a dětmi.",
+        "A tady, zcela nečekaně, jsme potkali naše druhy ze ztraceného člunu."
+      ]
+    },
+    {
+      "id": "d19", "kind": "diary", "chapter": "III · Cesta domů", "date": "25. srpna 1597", "title": "Kola",
+      "snow": 0.0, "wind": 0.3,
+      "images": [{"src": "rp228", "at": 0, "moves": [[0, 0.25, 0.18, 1.6], [1, 0.82, 0.65, 1.5], [4, 0.5, 0.5, 1.0], [6, 0.6, 0.85, 1.55], [7, 0.15, 0.6, 1.55]]}],
+      "text": [
+        "Doplouváme k ostrovu Kildin.",
+        "Na pevnině jsme narazili na tři Rusy, kteří bydleli v malé chatrči.",
+        "Řekli nám, že Kola není daleko, a poslali s jedním z nás průvodce, aby zjistil, jestli tam nekotví loď, která by plula do Holandska.",
+        "A kotvila. Stál tam Jan Cornelisz Rijp, ten, který s námi před rokem vyplul.",
+        "Připlul nám naproti se vším možným jídlem i pitím.",
+        "Spolu s ním jsme se vydali do Koly.",
+        "Rytina ukazuje město a kupecký dvůr,",
+        "a také Rusy, kteří nosí člun na ramenou, když přecházejí z jedné řeky do druhé."
+      ]
+    },
+    {
+      "id": "e01", "kind": "epilogue", "chapter": "Epilog", "date": "listopad 1597", "title": "Návrat",
+      "snow": 0.0, "wind": 0.3,
+      "images": [{"src": "rp229", "at": 0, "moves": [[0, 0.5, 0.5, 1.0], [1, 0.62, 0.45, 1.35], [3, 0.3, 0.3, 1.5], [4, 0.5, 0.5, 1.05]]}],
+      "text": [
+        "Na Rijpově lodi se trosečníci vrátili domů. Do Amsterdamu dorazili začátkem listopadu 1597.",
+        "Z celé posádky, která v ledu přezimovala, jich přežilo jen dvanáct.",
+        "Kniha Gerrita de Veera vyšla hned následující rok a brzy ji překládali do dalších jazyků.",
+        "Moře, kterým se plavili, dnes nese Barentsovo jméno."
+      ]
+    },
+    {
+      "id": "e02", "kind": "epilogue", "chapter": "Epilog", "date": "1871", "title": "Chata, která přečkala staletí",
+      "snow": 0.35, "wind": 0.5,
+      "images": [{"src": "rp215", "at": 0, "moves": [[0, 0.42, 0.38, 1.1], [1, 0.4, 0.38, 1.4], [3, 0.5, 0.5, 1.05]]}],
+      "text": [
+        "Chata na Nové Zemi zůstala stát.",
+        "V roce 1871 ji objevil norský kapitán Elling Carlsen, rodák z Tromsø.",
+        "Našel ji téměř netknutou, tak jak ji posádka v roce 1597 opustila: měděné kotlíky, sud, truhlu s nářadím, hodiny, flétnu i oblečení.",
+        "Část jeho nálezů je dnes v Rijksmuseu v Amsterdamu a část v Tromsø, ve městě, kde visí i panely s tímto deníkem."
+      ]
+    },
+    {
+      "id": "z99", "kind": "credits", "snow": 0.4, "wind": 0.4, "hold": 14,
+      "images": [{"src": "rp205", "at": 0, "moves": [[0, 0.5, 0.5, 1.1], [0, 0.5, 0.5, 1.2]]}],
+      "text": []
+    }
+  ]
+}
