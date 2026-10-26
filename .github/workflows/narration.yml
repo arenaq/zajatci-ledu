@@ -1,0 +1,62 @@
+# Namluví vyprávění hlasem z _build/voice.json a výsledek commitne do větve, ze které běží.
+# Spouští se ručně: Actions → Namluvit vyprávění → Run workflow.
+# Potřebuje repository secret ELEVENLABS_API_KEY (Settings → Secrets and variables → Actions).
+name: Namluvit vyprávění
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Jen ukázka jednoho snímku, např. d12 (prázdné = celé vyprávění a commit)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: narration
+  cancel-in-progress: false
+
+jobs:
+  narrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      # Už namluvené věty se znovu neplatí: mezipaměť se přenáší mezi běhy
+      - uses: actions/cache@v4
+        with:
+          path: _build/cache
+          key: tts-${{ hashFiles('_build/slides.json', '_build/voice.json') }}
+          restore-keys: tts-
+
+      - name: Namluvit
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ONLY: ${{ inputs.only }}
+        run: |
+          if [ -n "$ONLY" ]; then set -- --only "$ONLY"; fi
+          uv run --python 3.12 --with lameenc --with numpy python _build/build_audio.py elevenlabs "$@"
+
+      - name: Uložit ukázku
+        if: inputs.only != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ukazka-${{ inputs.only }}
+          path: ukazky/
+
+      - name: Commitnout nové nahrávky
+        if: inputs.only == ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898233+github-actions[bot]@users.noreply.github.com"
+          git add audio index.html
+          if git diff --cached --quiet; then
+            echo "Žádné změny ve vyprávění."
+          else
+            git commit -m "chore(audio): regenerate narration"
+            git push
+          fi

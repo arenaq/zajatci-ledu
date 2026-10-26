@@ -1,6 +1,7 @@
 """Vyřízne tiskovou desku z naskenovaných rytin (Rijksmuseum, CC0) a sjednotí tón.
 
 Použití: python prepare_images.py <slozka_se_skeny> <vystup> [debug]
+Skeny stáhne download_scans.py do _build/scans, výstup patří do img/.
 """
 import os
 import re
